@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BostonHomIQ - House Price Predictor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        h1 {
+            font-size: 42px;
+            color: #1a202c;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: #718096;
+            font-weight: 400;
+        }
+
+        form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+
+        .input-description {
+            font-size: 12px;
+            color: #a0aec0;
+            margin-bottom: 8px;
+        }
+
+        input[type="number"],
+        select {
+            padding: 12px 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        input[type="number"]:hover,
+        select:hover {
+            border-color: #cbd5e0;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+
+        button {
+            padding: 14px 32px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .btn-predict {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-width: 200px;
+        }
+
+        .btn-predict:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-predict:active {
+            transform: translateY(0);
+        }
+
+        .btn-reset {
+            background: #e2e8f0;
+            color: #2d3748;
+            min-width: 120px;
+        }
+
+        .btn-reset:hover {
+            background: #cbd5e0;
+        }
+
+        .result-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 20px;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        .result-box.active {
+            display: block;
+        }
+
+        .result-label {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .result-value {
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .error-box {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #c53030;
+            display: none;
+        }
+
+        .error-box.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .info-text {
+            text-align: center;
+            color: #718096;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 25px;
+            }
+
+            h1 {
+                font-size: 32px;
+            }
+
+            form {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="badge">✨ Powered by Linear Regression</div>
+            <h1>BostonHomIQ</h1>
+            <p class="subtitle">Predict Boston House Prices with Machine Learning</p>
+        </div>
+
+        <div class="error-box {% if error_text %}active{% endif %}" id="errorBox">
+            {{ error_text }}
+        </div>
+
+        <div class="result-box {% if prediction_text %}active{% endif %}" id="resultBox">
+            <div class="result-label">Predicted House Price</div>
+            <div class="result-value" id="resultValue">{{ prediction_text }}</div>
+        </div>
+
+        <form method="POST" action="/predict" id="predictionForm">
+            <div class="form-group">
+                <label for="CRIM">CRIM</label>
+                <div class="input-description">Per capita crime rate by town</div>
+                <input type="number" name="CRIM" id="CRIM" step="0.01" required>
+            </div>
+
+            <div class="form-group">
+                <label for="ZN">ZN</label>
+                <div class="input-description">Residential land zoned over 25,000 sq.ft. (%)</div>
+                <input type="number" name="ZN" id="ZN" step="0.01" required>
+            </div>
+
+            <div class="form-group">
+                <label for="INDUS">INDUS</label>
+                <div class="input-description">Non-retail business acres per town (%)</div>
+                <input type="number" name="INDUS" id="INDUS" step="0.01" required>
+            </div>
+
+            <div class="form-group">
+                <label for="CHAS">CHAS</label>
+                <div class="input-description">Charles River boundary</div>
+                <select name="CHAS" id="CHAS" required>
+                    <option value="">Select...</option>
+                    <option value="0">No (0)</option>
+                    <option value="1">Yes (1)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="NOX">NOX</label>
+                <div class="input-description">Nitric oxides concentration (per 10M)</div>
+                <input type="number" name="NOX" id="NOX" step="0.01" required>
+            </div>
+
+            <div class="form-group">
+                <label for="RM">RM</label>
+                <div class="input-description">Average rooms per dwelling</div>
+                <input type="number" name="RM" id="RM" step="0.01" required>
+            </div>
+
+            <div class="form-group">
+                <label for="AGE">AGE</label>
+                <div class="input-description">Owner-occupied units built pre-1940 (%)</div>
+                <input type="number" name="AGE" id="AGE" step="0.01" required>
+            </div>
+
+            <div class="form-group">
+                <label for="DIS">DIS</label>
+                <div class="input-description">Distance to Boston employment centres</div>
+                <input type="number" name="DIS" id="DIS" step="0.01" required>
+            </div>
+
+            <div class="form-group">
+                <label for="RAD">RAD</label>
+                <div class="input-description">Highway accessibility index</div>
+                <input type="number" name="RAD" id="RAD" step="0.01" required>
+            </div>
+
+            <div class="form-group">
+                <label for="TAX">TAX</label>
+                <div class="input-description">Property tax rate per $10,000</div>
+                <input type="number" name="TAX" id="TAX" step="0.01" required>
+            </div>
+
+            <div class="form-group">
+                <label for="PTRATIO">PTRATIO</label>
+                <div class="input-description">Pupil-teacher ratio by town</div>
+                <input type="number" name="PTRATIO" id="PTRATIO" step="0.01" required>
+            </div>
+
+            <div class="form-group">
+                <label for="B">B</label>
+                <div class="input-description">Proportion of Black residents index</div>
+                <input type="number" name="B" id="B" step="0.01" required>
+            </div>
+
+            <div class="form-group">
+                <label for="LSTAT">LSTAT</label>
+                <div class="input-description">Lower status population (%)</div>
+                <input type="number" name="LSTAT" id="LSTAT" step="0.01" required>
+            </div>
+
+            <div class="button-group" style="grid-column: 1 / -1;">
+                <button type="submit" class="btn-predict">Predict House Price</button>
+                <button type="reset" class="btn-reset">Reset Fields</button>
+            </div>
+        </form>
+
+        <div class="info-text">
+            All values based on the Boston Housing Dataset
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('predictionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            
+            // Show loading state
+            const submitBtn = this.querySelector('.btn-predict');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Predicting...';
+            submitBtn.disabled = true;
+            
+            fetch('/predict', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(html => {
+                document.body.innerHTML = html;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            });
+        });
+    </script>
+</body>
+</html>
